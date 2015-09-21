@@ -30,6 +30,10 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
 #include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h"
 #include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h"
 
@@ -48,7 +52,9 @@
 #include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 
+#include "TTree.h"
 #include "TVector2.h"
+
 //
 // class declaration
 //
@@ -74,7 +80,10 @@ class HcalMetStudy : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       edm::InputTag trigprims_;
       std::vector<edm::InputTag> rechits_;
-      // ----------member data ---------------------------
+
+      TTree* t_;
+      double tp_met_;
+      double rh_met_;
 };
 
 //
@@ -95,6 +104,10 @@ HcalMetStudy::HcalMetStudy(const edm::ParameterSet& config) :
    //now do what ever initialization is needed
    usesResource("TFileService");
 
+   edm::Service<TFileService> fs;
+   t_ = fs->make<TTree>("met", "MET");
+   t_->Branch("tp", &tp_met_);
+   t_->Branch("rh", &rh_met_);
 }
 
 
@@ -184,7 +197,9 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
       tp_met += cell;
    }
 
-   std::cout << hit_met.Mod() << " vs TP " << tp_met.Mod() << std::endl;
+   tp_met_ = tp_met.Mod();
+   rh_met_ = hit_met.Mod();
+   t_->Fill();
 }
 
 
