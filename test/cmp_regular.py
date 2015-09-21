@@ -5,7 +5,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('test')
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressError = cms.untracked.vstring("caloStage1Digis")
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
@@ -24,13 +24,13 @@ process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 
 process.dump = cms.EDAnalyzer("EventContentAnalyzer")
-process.analyzer = cms.EDAnalyzer("HcalMetStudy",
+process.study = cms.EDAnalyzer("HcalMetStudy",
         TriggerPrimitives = cms.InputTag('hcalDigis'),
-        RecHits = cms.InputTag('hbhereco'),
+        RecHits = cms.VInputTag('hbhereco', 'hfreco'),
 )
 
-# process.p = cms.Path(process.RawToDigi * process.dump * process.analyzer) # for plots
-process.p = cms.Path(process.RawToDigi * process.analyzer) # for plots
+# process.p = cms.Path(process.RawToDigi * process.dump * process.study) # for plots
+process.p = cms.Path(process.RawToDigi * process.study) # for plots
 
 process.schedule = cms.Schedule(process.p)
 
