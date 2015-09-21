@@ -41,12 +41,9 @@ process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
         fileName = cms.string('legacy.root'))
 
+from Debug.HcalMetStudy import files_raw, files_reco
+
 process.source = cms.Source('PoolSource',
-        fileNames = cms.untracked.vstring([
-            '/store/data/Run2015A/MET/RECO/PromptReco-v1/000/248/036/00000/2C85BD5C-5714-E511-9F7D-02163E011BBD.root',
-            '/store/data/Run2015A/MET/RECO/PromptReco-v1/000/248/038/00000/546E74FC-5D14-E511-9DCE-02163E0145BA.root'
-        ]),
-        secondaryFileNames = cms.untracked.vstring([
-            '/store/data/Run2015A/MET/RAW/v1/000/248/036/00000/4E4AF8A7-B412-E511-A0B3-02163E014406.root',
-            '/store/data/Run2015A/MET/RAW/v1/000/248/038/00000/DA2F1ED8-0513-E511-BBE5-02163E01451E.root'
-        ]))
+        fileNames = files_reco.readFiles,
+        secondaryFileNames = files_raw.readFiles
+)
