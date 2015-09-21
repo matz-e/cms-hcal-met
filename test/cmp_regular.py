@@ -6,6 +6,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process('test')
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.suppressError = cms.untracked.vstring("caloStage1Digis")
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 
@@ -24,7 +25,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 process.dump = cms.EDAnalyzer("EventContentAnalyzer")
 process.analyzer = cms.EDAnalyzer("HcalMetStudy",
-        TriggerPrimitives = cms.VInputTag('hcalDigis'),
+        TriggerPrimitives = cms.InputTag('hcalDigis'),
         RecHits = cms.InputTag('hbhereco'),
 )
 
