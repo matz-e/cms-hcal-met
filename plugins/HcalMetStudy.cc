@@ -41,6 +41,7 @@
 
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
 #include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
+#include "DataFormats/HcalRecHit/interface/HFRecHit.h"
 
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/HcalTowerAlgo/interface/HcalGeometry.h"
@@ -72,7 +73,7 @@ class HcalMetStudy : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void endJob() override;
 
       edm::InputTag trigprims_;
-      edm::InputTag rechits_;
+      std::vector<edm::InputTag> rechits_;
       // ----------member data ---------------------------
 };
 
@@ -89,7 +90,7 @@ class HcalMetStudy : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 HcalMetStudy::HcalMetStudy(const edm::ParameterSet& config) :
    trigprims_(config.getParameter<edm::InputTag>("TriggerPrimitives")),
-   rechits_(config.getParameter<edm::InputTag>("RecHits"))
+   rechits_(config.getParameter<std::vector<edm::InputTag>>("RecHits"))
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
@@ -133,9 +134,16 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
    }
 
    edm::Handle< edm::SortedCollection<HBHERecHit> > hits;
-   if (!event.getByLabel(rechits_, hits)) {
+   if (!event.getByLabel(rechits_[0], hits)) {
       edm::LogError("HcalCompareLegacyChains") <<
-         "Can't find RH collection with tag '" << rechits_ << "'" << std::endl;
+         "Can't find RH collection with tag '" << rechits_[0] << "'" << std::endl;
+      return;
+   }
+
+   edm::Handle< edm::SortedCollection<HFRecHit> > fhits;
+   if (!event.getByLabel(rechits_[1], fhits)) {
+      edm::LogError("HcalCompareLegacyChains") <<
+         "Can't find RH collection with tag '" << rechits_[1] << "'" << std::endl;
       return;
    }
 
@@ -143,6 +151,14 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
    TVector2 hit_met(0., 0.);
 
    for (auto& hit: *(hits.product())) {
+      HcalDetId id(hit.id());
+      const auto *local_geo = calo_geo->getSubdetectorGeometry(id)->getGeometry(id);
+
+      cell.SetMagPhi(hit.energy(), local_geo->getPosition().phi());
+      hit_met += cell;
+   }
+
+   for (auto& hit: *(fhits.product())) {
       HcalDetId id(hit.id());
       const auto *local_geo = calo_geo->getSubdetectorGeometry(id)->getGeometry(id);
 
