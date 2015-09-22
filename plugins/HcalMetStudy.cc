@@ -84,6 +84,10 @@ class HcalMetStudy : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       TTree* t_;
       double tp_met_;
       double rh_met_;
+      std::vector<double> tp_mets_;
+      std::vector<double> rh_mets_;
+
+      std::vector<double> et_cuts_ = {-1e6, 1., 5.};
 };
 
 //
@@ -104,10 +108,18 @@ HcalMetStudy::HcalMetStudy(const edm::ParameterSet& config) :
    //now do what ever initialization is needed
    usesResource("TFileService");
 
+   tp_mets_ = std::vector<double>(et_cuts_.size(), 0.);
+   rh_mets_ = std::vector<double>(et_cuts_.size(), 0.);
+
    edm::Service<TFileService> fs;
    t_ = fs->make<TTree>("met", "MET");
    t_->Branch("tp", &tp_met_);
    t_->Branch("rh", &rh_met_);
+
+   for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
+      t_->Branch(("tp_et_cut_" + std::to_string(i)).c_str(), &tp_mets_[i]);
+      t_->Branch(("rh_et_cut_" + std::to_string(i)).c_str(), &rh_mets_[i]);
+   }
 }
 
 
@@ -162,24 +174,38 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
    TVector2 cell;
    TVector2 hit_met(0., 0.);
+   TVector2 hit_mets[et_cuts_.size()];
 
    for (auto& hit: *(hits.product())) {
       HcalDetId id(hit.id());
       const auto *local_geo = calo_geo->getSubdetectorGeometry(id)->getGeometry(id);
 
-      cell.SetMagPhi(hit.energy(), local_geo->getPosition().phi());
+      auto et = hit.energy() / cosh(local_geo->getPosition().eta());
+      cell.SetMagPhi(et, local_geo->getPosition().phi());
       hit_met += cell;
+
+      for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
+         if (et >= et_cuts_[i])
+            hit_mets[i] += cell;
+      }
    }
 
    for (auto& hit: *(fhits.product())) {
       HcalDetId id(hit.id());
       const auto *local_geo = calo_geo->getSubdetectorGeometry(id)->getGeometry(id);
 
-      cell.SetMagPhi(hit.energy(), local_geo->getPosition().phi());
+      auto et = hit.energy() / cosh(local_geo->getPosition().eta());
+      cell.SetMagPhi(et, local_geo->getPosition().phi());
       hit_met += cell;
+
+      for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
+         if (et >= et_cuts_[i])
+            hit_mets[i] += cell;
+      }
    }
 
    TVector2 tp_met(0., 0.);
+   TVector2 tp_mets[et_cuts_.size()];
 
    for (auto& tp: *(tps)) {
       HcalTrigTowerDetId id = tp.id();
@@ -195,10 +221,21 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
       cell.SetMagPhi(energy, phi);
       tp_met += cell;
+
+      for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
+         if (energy >= et_cuts_[i])
+            tp_mets[i] += cell;
+      }
    }
 
    tp_met_ = tp_met.Mod();
    rh_met_ = hit_met.Mod();
+
+   for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
+      tp_mets_[i] = tp_mets[i].Mod();
+      rh_mets_[i] = hit_mets[i].Mod();
+   }
+
    t_->Fill();
 }
 
