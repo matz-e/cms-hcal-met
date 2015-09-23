@@ -29,8 +29,14 @@ process.study = cms.EDAnalyzer("HcalMetStudy",
         RecHits = cms.VInputTag('hbhereco', 'hfreco'),
 )
 
-# process.p = cms.Path(process.RawToDigi * process.dump * process.study) # for plots
-process.p = cms.Path(process.RawToDigi * process.study) # for plots
+process.comp = cms.EDAnalyzer("HcalCompareLegacyChains",
+        TriggerPrimitives = cms.InputTag('hcalDigis'),
+        RecHits = cms.InputTag('hbhereco'),
+        DataFrames = cms.VInputTag()
+)
+
+# process.p = cms.Path(process.RawToDigi * process.dump * process.comp * process.study) # for plots
+process.p = cms.Path(process.RawToDigi * process.comp * process.study) # for plots
 
 process.schedule = cms.Schedule(process.p)
 
