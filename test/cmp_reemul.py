@@ -43,6 +43,8 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
         cms.InputTag('hcalDigis'),
         cms.InputTag('hcalDigis'))
 
+process.CaloTPGTranscoder.uncompress = cms.bool(False)
+
 # process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.dump * process.comp * process.study) # for plots
 process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.comp * process.study) # for plots
 

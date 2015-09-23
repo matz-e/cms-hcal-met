@@ -29,29 +29,33 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 process.dump = cms.EDAnalyzer("EventContentAnalyzer")
 process.study = cms.EDAnalyzer("HcalMetStudy",
-        TriggerPrimitives = cms.InputTag('hcalDigis'),
+        TriggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
         RecHits = cms.VInputTag('hbhereco', 'hfreco'),
 )
 
 process.comp = cms.EDAnalyzer("HcalCompareLegacyChains",
-        TriggerPrimitives = cms.InputTag('hcalDigis'),
+        TriggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
         RecHits = cms.InputTag('hbhereco'),
         DataFrames = cms.VInputTag()
 )
 
-# process.p = cms.Path(process.RawToDigi * process.dump * process.comp * process.study) # for plots
-process.p = cms.Path(process.RawToDigi * process.comp * process.study) # for plots
+process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
+        cms.InputTag('hcalDigis'),
+        cms.InputTag('hcalDigis'))
+
+process.CaloTPGTranscoder.uncompress = cms.bool(True)
+
+# process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.dump * process.comp * process.study) # for plots
+process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.comp * process.study) # for plots
 
 process.schedule = cms.Schedule(process.p)
-
-process.CaloTPGTranscoder.uncompress = cms.bool(False)
 
 from SLHCUpgradeSimulations.Configuration.postLS1Customs import customisePostLS1
 process = customisePostLS1(process)
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
-        fileName = cms.string('legacy.root'))
+        fileName = cms.string('reemul_uncompressed.root'))
 
 from Debug.HcalMetStudy import files_raw, files_reco
 
