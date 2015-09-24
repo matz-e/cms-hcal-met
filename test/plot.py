@@ -2,6 +2,7 @@ import sys
 import ROOT as r
 
 r.gROOT.SetBatch()
+r.gStyle.SetOptStat(0)
 
 labels = {
         'legacy.root': 'RAW',
@@ -13,35 +14,46 @@ def plot(fn):
     f = r.TFile(fn)
     c = r.TCanvas()
     t = f.Get("study/met")
-    t.Draw("tp:rh>>hist(50,0,200,50,0,200)", "", "COLZ")
+
+    t.Draw("tp:rh>>hist(50,0,600,50,0,600)", "", "COLZ")
+    r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_met.pdf"))
 
+    t.Draw("tp:rh>>hist(50,0,200,50,0,200)", "", "COLZ")
+    r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
+    c.SetLogz()
+    c.SaveAs(fn.replace(".root", "_met_low.pdf"))
+
     t = f.Get("comp/matches")
     t.Draw("TP_energy:RH_energy>>hist(50,0,200,50,0,200)", "", "COLZ")
+    r.gDirectory.Get("hist").SetTitle(";RH #sum E_{T};TP #sum E_{T}")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et.pdf"))
 
     t.Draw("TP_energy:RH_energy>>hist(50,0,10,50,0,10)", "", "COLZ")
+    r.gDirectory.Get("hist").SetTitle(";RH #sum E_{T};TP #sum E_{T}")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et_low.pdf"))
 
     f.Close()
 
 def plot_composite(fns):
+    c = r.TCanvas()
+
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("comp/tps")
         t.Draw("et>>hist(100,0,200)", "", "")
         h = r.gDirectory.Get("hist")
+        h.SetTitle(";TP E_{T};Count");
         h.SetDirectory(0)
         h.SetName(fn)
         hists.append(h)
         f.Close()
 
     opt = ""
-    c = r.TCanvas()
     l = r.TLegend(.2, .9, .2, .9)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
@@ -50,6 +62,7 @@ def plot_composite(fns):
         l.AddEntry(h.GetName(), h.GetName(), "l")
         opt = "same"
     c.SetLogy()
+    l.AddEntry("hist", "ashtnoeighdaynoi", "l")
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
