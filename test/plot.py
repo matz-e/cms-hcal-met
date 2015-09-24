@@ -50,7 +50,6 @@ def plot_composite(fns):
         l.AddEntry(h.GetName(), h.GetName(), "l")
         opt = "same"
     c.SetLogy()
-    print 'legen - wait for it - dary'
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
