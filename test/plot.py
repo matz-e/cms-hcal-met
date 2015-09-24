@@ -15,16 +15,16 @@ def plot(fn):
     t = f.Get("study/met")
     t.Draw("tp:rh>>hist(50,0,200,50,0,200)", "", "COLZ")
     c.SetLogz()
-    c.SaveAs(fn.replace(".root", "_met.png"))
+    c.SaveAs(fn.replace(".root", "_met.pdf"))
 
     t = f.Get("comp/matches")
     t.Draw("TP_energy:RH_energy>>hist(50,0,200,50,0,200)", "", "COLZ")
     c.SetLogz()
-    c.SaveAs(fn.replace(".root", "_et.png"))
+    c.SaveAs(fn.replace(".root", "_et.pdf"))
 
     t.Draw("TP_energy:RH_energy>>hist(50,0,10,50,0,10)", "", "COLZ")
     c.SetLogz()
-    c.SaveAs(fn.replace(".root", "_et_low.png"))
+    c.SaveAs(fn.replace(".root", "_et_low.pdf"))
 
     f.Close()
 
@@ -52,7 +52,7 @@ def plot_composite(fns):
     c.SetLogy()
     print 'legen - wait for it - dary'
     l.Draw()
-    c.SaveAs("tp_et.png")
+    c.SaveAs("tp_et.pdf")
 
 plot_composite(sys.argv[1:])
 
