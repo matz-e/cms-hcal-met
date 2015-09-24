@@ -1,6 +1,8 @@
 import sys
 import ROOT as r
 
+r.gROOT.SetBatch()
+
 def plot(fn):
     f = r.TFile(fn)
     c = r.TCanvas()
