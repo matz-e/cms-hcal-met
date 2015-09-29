@@ -92,7 +92,31 @@ def plot_composite(fns):
     c.SetLogy()
     l.Draw()
     c.SaveAs("tp_rh_rel_diff_log.pdf")
+
+    hists = []
+    for fn in fns:
+        f = r.TFile(fn)
+        t = f.Get("study/met")
+        t.Draw("(rh-tp)/rh>>hist(30,-1.1,1.1)", "", "")
+        h = r.gDirectory.Get("hist")
+        h.SetTitle(";(RH-TP)/RH MET;Count");
+        h.SetDirectory(0)
+        h.SetName(fn)
+        h.Scale(100. / t.GetEntries())
+        hists.append(h)
+        f.Close()
+
+    opt = ""
+    l = r.TLegend(.1, .7, .5, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
+    for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
+        h.SetName(labels[h.GetName()])
+        h.SetLineColor(color)
+        h.Draw(opt)
+        l.AddEntry(h.GetName(), h.GetName(), "l")
+        opt = "same"
     c.SetLogy(False)
+    l.Draw()
     c.SaveAs("tp_rh_rel_diff.pdf")
 
 plot_composite(sys.argv[1:])
