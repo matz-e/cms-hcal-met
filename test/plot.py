@@ -55,8 +55,8 @@ def plot_composite(fns):
         f.Close()
 
     opt = ""
-    l = r.TLegend(.2, .9, .2, .9)
-    hists = sorted(hists, key=lambda h: h.GetMaximum())
+    l = r.TLegend(.2, .2, .7, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
         h.SetLineColor(color)
@@ -64,7 +64,6 @@ def plot_composite(fns):
         l.AddEntry(h.GetName(), h.GetName(), "l")
         opt = "same"
     c.SetLogy()
-    l.AddEntry("hist", "ashtnoeighdaynoi", "l")
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
@@ -82,8 +81,8 @@ def plot_composite(fns):
         f.Close()
 
     opt = ""
-    l = r.TLegend(.2, .9, .2, .9)
-    hists = sorted(hists, key=lambda h: h.GetMaximum())
+    l = r.TLegend(.1, .7, .5, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
         h.SetLineColor(color)
@@ -91,7 +90,6 @@ def plot_composite(fns):
         l.AddEntry(h.GetName(), h.GetName(), "l")
         opt = "same"
     c.SetLogy()
-    l.AddEntry("hist", "ashtnoeighdaynoi", "l")
     l.Draw()
     c.SaveAs("tp_rh_rel_diff_log.pdf")
     c.SetLogy(False)
