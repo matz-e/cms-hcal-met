@@ -12,6 +12,7 @@ process.load('FWCore.MessageLogger.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressError = cms.untracked.vstring("caloStage1Digis")
 
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -39,12 +40,22 @@ process.comp = cms.EDAnalyzer("HcalCompareLegacyChains",
         DataFrames = cms.VInputTag()
 )
 
-# process.p = cms.Path(process.RawToDigi * process.dump * process.comp * process.study) # for plots
-process.p = cms.Path(process.RawToDigi * process.comp * process.study) # for plots
-
-process.schedule = cms.Schedule(process.p)
+process.filterSaturated = cms.EDFilter("SaturatedFilter",
+        triggerPrimitives = cms.InputTag('hcalDigis'),
+        maxValue = cms.uint32(0xff)
+)
 
 process.CaloTPGTranscoder.uncompress = cms.bool(False)
+
+process.p = cms.Path(
+        process.RawToDigi
+        # * process.dump
+        * process.filterSaturated
+        * process.comp
+        * process.study
+)
+
+process.schedule = cms.Schedule(process.p)
 
 from SLHCUpgradeSimulations.Configuration.postLS1Customs import customisePostLS1
 process = customisePostLS1(process)

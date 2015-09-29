@@ -12,6 +12,7 @@ process.load('FWCore.MessageLogger.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressError = cms.untracked.vstring("caloStage1Digis")
 
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -43,10 +44,21 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
         cms.InputTag('hcalDigis'),
         cms.InputTag('hcalDigis'))
 
+process.filterSaturated = cms.EDFilter("SaturatedFilter",
+        triggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
+        maxValue = cms.uint32(0x100)
+)
+
 process.CaloTPGTranscoder.uncompress = cms.bool(False)
 
-# process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.dump * process.comp * process.study) # for plots
-process.p = cms.Path(process.RawToDigi * process.simHcalTriggerPrimitiveDigis * process.comp * process.study) # for plots
+process.p = cms.Path(
+        process.RawToDigi
+        * process.simHcalTriggerPrimitiveDigis
+        # * process.dump
+        * process.filterSaturated
+        * process.comp
+        * process.study
+)
 
 process.schedule = cms.Schedule(process.p)
 
