@@ -50,11 +50,13 @@ def plot_composite(fns):
         h.SetTitle(";TP E_{T};Count");
         h.SetDirectory(0)
         h.SetName(fn)
+        h.Scale(100. / t.GetEntries())
         hists.append(h)
         f.Close()
 
     opt = ""
     l = r.TLegend(.2, .9, .2, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum())
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
         h.SetLineColor(color)
@@ -75,11 +77,13 @@ def plot_composite(fns):
         h.SetTitle(";(RH-TP)/RH MET;Count");
         h.SetDirectory(0)
         h.SetName(fn)
+        h.Scale(100. / t.GetEntries())
         hists.append(h)
         f.Close()
 
     opt = ""
     l = r.TLegend(.2, .9, .2, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum())
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
         h.SetLineColor(color)
