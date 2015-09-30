@@ -27,12 +27,12 @@ def plot(fn):
 
     t = f.Get("comp/matches")
     t.Draw("TP_energy:RH_energy>>hist(50,0,200,50,0,200)", "", "COLZ")
-    r.gDirectory.Get("hist").SetTitle(";RH #sum E_{T};TP #sum E_{T}")
+    r.gDirectory.Get("hist").SetTitle(";RH E_{T};TP E_{T}")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et.pdf"))
 
     t.Draw("TP_energy:RH_energy>>hist(50,0,10,50,0,10)", "", "COLZ")
-    r.gDirectory.Get("hist").SetTitle(";RH #sum E_{T};TP #sum E_{T}")
+    r.gDirectory.Get("hist").SetTitle(";RH E_{T};TP E_{T}")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et_low.pdf"))
 
