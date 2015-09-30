@@ -55,7 +55,7 @@ def plot_composite(fns):
         f.Close()
 
     opt = ""
-    l = r.TLegend(.2, .2, .7, .9)
+    l = r.TLegend(.5, .7, .9, .9)
     hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
