@@ -67,11 +67,14 @@ def plot_composite(fns):
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
+def plot_pull(fns, selection, stub):
+    c = r.TCanvas()
+
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
-        t.Draw("(rh-tp)/rh>>hist(101,-10,2)", "", "")
+        t.Draw("(rh-tp)/rh>>hist(101,-10,2)", selection, "")
         h = r.gDirectory.Get("hist")
         h.SetTitle(";(RH-TP)/RH MET;Count");
         h.SetDirectory(0)
@@ -81,7 +84,7 @@ def plot_composite(fns):
         f.Close()
 
     opt = ""
-    l = r.TLegend(.1, .7, .5, .9)
+    l = r.TLegend(.1, .7, .4, .9)
     hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
@@ -91,13 +94,13 @@ def plot_composite(fns):
         opt = "same"
     c.SetLogy()
     l.Draw()
-    c.SaveAs("tp_rh_rel_diff_log.pdf")
+    c.SaveAs("tp_rh_rel_diff_{0}_log.pdf".format(stub))
 
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
-        t.Draw("(rh-tp)/rh>>hist(30,-1.1,1.1)", "", "")
+        t.Draw("(rh-tp)/rh>>hist(30,-1.1,1.1)", selection, "")
         h = r.gDirectory.Get("hist")
         h.SetTitle(";(RH-TP)/RH MET;Count");
         h.SetDirectory(0)
@@ -107,7 +110,7 @@ def plot_composite(fns):
         f.Close()
 
     opt = ""
-    l = r.TLegend(.1, .7, .5, .9)
+    l = r.TLegend(.1, .7, .4, .9)
     hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
     for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
         h.SetName(labels[h.GetName()])
@@ -117,9 +120,13 @@ def plot_composite(fns):
         opt = "same"
     c.SetLogy(False)
     l.Draw()
-    c.SaveAs("tp_rh_rel_diff.pdf")
+    c.SaveAs("tp_rh_rel_diff_{0}.pdf".format(stub))
 
 plot_composite(sys.argv[1:])
+plot_pull(sys.argv[1:], "", "no_cut")
+plot_pull(sys.argv[1:], "tp > 50", "gt50")
+plot_pull(sys.argv[1:], "tp > 100", "gt100")
+plot_pull(sys.argv[1:], "tp > 150", "gt150")
 
 for fn in sys.argv[1:]:
     plot(fn)
