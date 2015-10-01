@@ -10,22 +10,26 @@ labels = {
         'reemul_uncompressed.root': 'uncompressed'
 }
 
-def plot(fn):
+def plot_met(fn, which=""):
     f = r.TFile(fn)
     c = r.TCanvas()
     t = f.Get("study/met")
 
-    t.Draw("tp:rh>>hist(50,0,600,50,0,600)", "", "COLZ")
+    t.Draw("tp{0}:rh{0}>>hist(50,0,600,50,0,600)".format(which), "", "COLZ")
     r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
     c.SetLogz()
-    c.SaveAs(fn.replace(".root", "_met.pdf"))
+    c.SaveAs(fn.replace(".root", "_met{0}.pdf".format(which)))
 
-    t.Draw("tp:rh>>hist(50,0,200,50,0,200)", "", "COLZ")
+    t.Draw("tp{0}:rh{0}>>hist(50,0,200,50,0,200)".format(which), "", "COLZ")
     r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
     c.SetLogz()
-    c.SaveAs(fn.replace(".root", "_met_low.pdf"))
+    c.SaveAs(fn.replace(".root", "_met{0}_low.pdf".format(which)))
 
+def plot_matches(fn):
+    f = r.TFile(fn)
+    c = r.TCanvas()
     t = f.Get("comp/matches")
+
     t.Draw("TP_energy:RH_energy>>hist(50,0,200,50,0,200)", "", "COLZ")
     r.gDirectory.Get("hist").SetTitle(";RH E_{T};TP E_{T}")
     c.SetLogz()
@@ -50,7 +54,7 @@ def plot_composite(fns):
         h.SetTitle(";TP E_{T};Count");
         h.SetDirectory(0)
         h.SetName(fn)
-        h.Scale(100. / t.GetEntries())
+        h.Scale(100. / h.Integral())
         hists.append(h)
         f.Close()
 
@@ -67,14 +71,14 @@ def plot_composite(fns):
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
-def plot_pull(fns, selection, stub):
+def plot_pull(fns, selection, stub, which=""):
     c = r.TCanvas()
 
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
-        t.Draw("(rh-tp)/rh>>hist(101,-10,2)", selection, "")
+        t.Draw("(rh{0}-tp{0})/rh{0}>>hist(101,-10,2)".format(which), selection, "")
         h = r.gDirectory.Get("hist")
         h.SetTitle(";(RH-TP)/RH MET;Count");
         h.SetDirectory(0)
@@ -94,13 +98,13 @@ def plot_pull(fns, selection, stub):
         opt = "same"
     c.SetLogy()
     l.Draw()
-    c.SaveAs("tp_rh_rel_diff_{0}_log.pdf".format(stub))
+    c.SaveAs("tp_rh_rel_diff{1}_{0}_log.pdf".format(stub, which))
 
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
-        t.Draw("(rh-tp)/rh>>hist(30,-1.1,1.1)", selection, "")
+        t.Draw("(rh{0}-tp{0})/rh{0}>>hist(30,-1.1,1.1)".format(which), selection, "")
         h = r.gDirectory.Get("hist")
         h.SetTitle(";(RH-TP)/RH MET;Count");
         h.SetDirectory(0)
@@ -120,13 +124,20 @@ def plot_pull(fns, selection, stub):
         opt = "same"
     c.SetLogy(False)
     l.Draw()
-    c.SaveAs("tp_rh_rel_diff_{0}.pdf".format(stub))
+    c.SaveAs("tp_rh_rel_diff{1}_{0}.pdf".format(stub, which))
 
 plot_composite(sys.argv[1:])
-plot_pull(sys.argv[1:], "", "no_cut")
-plot_pull(sys.argv[1:], "tp > 50", "gt50")
-plot_pull(sys.argv[1:], "tp > 100", "gt100")
-plot_pull(sys.argv[1:], "tp > 150", "gt150")
+
+for i in range(4):
+    w = "_eta_cut_{0}".format(i) if i < 3 else ""
+    plot_pull(sys.argv[1:], "", "no_cut", which=w)
+    plot_pull(sys.argv[1:], "tp > 50", "gt50", which=w)
+    plot_pull(sys.argv[1:], "tp > 100", "gt100", which=w)
+    plot_pull(sys.argv[1:], "tp > 150", "gt150", which=w)
 
 for fn in sys.argv[1:]:
-    plot(fn)
+    plot_met(fn)
+    plot_met(fn, "_eta_cut_0")
+    plot_met(fn, "_eta_cut_1")
+    plot_met(fn, "_eta_cut_2")
+    plot_matches(fn)
