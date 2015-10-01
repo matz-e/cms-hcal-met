@@ -86,8 +86,11 @@ class HcalMetStudy : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       double rh_met_;
       std::vector<double> tp_mets_;
       std::vector<double> rh_mets_;
+      std::vector<double> tp_mets_eta_;
+      std::vector<double> rh_mets_eta_;
 
       std::vector<double> et_cuts_ = {-1e6, 1., 5.};
+      std::vector<double> eta_cuts_ = {1.5, 3., 5.};
 };
 
 //
@@ -110,6 +113,8 @@ HcalMetStudy::HcalMetStudy(const edm::ParameterSet& config) :
 
    tp_mets_ = std::vector<double>(et_cuts_.size(), 0.);
    rh_mets_ = std::vector<double>(et_cuts_.size(), 0.);
+   tp_mets_eta_ = std::vector<double>(eta_cuts_.size(), 0.);
+   rh_mets_eta_ = std::vector<double>(eta_cuts_.size(), 0.);
 
    edm::Service<TFileService> fs;
    t_ = fs->make<TTree>("met", "MET");
@@ -119,6 +124,11 @@ HcalMetStudy::HcalMetStudy(const edm::ParameterSet& config) :
    for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
       t_->Branch(("tp_et_cut_" + std::to_string(i)).c_str(), &tp_mets_[i]);
       t_->Branch(("rh_et_cut_" + std::to_string(i)).c_str(), &rh_mets_[i]);
+   }
+
+   for (unsigned int i = 0; i < eta_cuts_.size(); ++i) {
+      t_->Branch(("tp_eta_cut_" + std::to_string(i)).c_str(), &tp_mets_eta_[i]);
+      t_->Branch(("rh_eta_cut_" + std::to_string(i)).c_str(), &rh_mets_eta_[i]);
    }
 }
 
@@ -175,6 +185,7 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
    TVector2 cell;
    TVector2 hit_met(0., 0.);
    TVector2 hit_mets[et_cuts_.size()];
+   TVector2 hit_mets_eta[eta_cuts_.size()];
 
    for (auto& hit: *(hits.product())) {
       HcalDetId id(hit.id());
@@ -187,6 +198,13 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
       for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
          if (et >= et_cuts_[i])
             hit_mets[i] += cell;
+      }
+
+      for (unsigned int i = 0; i < eta_cuts_.size(); ++i) {
+         if (local_geo->getPosition().eta() < eta_cuts_[i]) {
+            hit_mets_eta[i] += cell;
+            break;
+         }
       }
    }
 
@@ -202,10 +220,18 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
          if (et >= et_cuts_[i])
             hit_mets[i] += cell;
       }
+
+      for (unsigned int i = 0; i < eta_cuts_.size(); ++i) {
+         if (local_geo->getPosition().eta() < eta_cuts_[i]) {
+            hit_mets_eta[i] += cell;
+            break;
+         }
+      }
    }
 
    TVector2 tp_met(0., 0.);
    TVector2 tp_mets[et_cuts_.size()];
+   TVector2 tp_mets_eta[eta_cuts_.size()];
 
    for (auto& tp: *(tps)) {
       HcalTrigTowerDetId id = tp.id();
@@ -213,11 +239,14 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
       auto ids = tt_geo->detIds(id);
       float phi = 0.;
+      float eta = 0.;
       for (auto& i: ids) {
          const auto *local_geo = calo_geo->getSubdetectorGeometry(i)->getGeometry(i);
          phi += local_geo->getPosition().phi();
+         eta += local_geo->getPosition().eta();
       }
       phi /= ids.size();
+      eta /= ids.size();
 
       cell.SetMagPhi(energy, phi);
       tp_met += cell;
@@ -225,6 +254,13 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
       for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
          if (energy >= et_cuts_[i])
             tp_mets[i] += cell;
+      }
+
+      for (unsigned int i = 0; i < eta_cuts_.size(); ++i) {
+         if (eta < eta_cuts_[i]) {
+            tp_mets_eta[i] += cell;
+            break;
+         }
       }
    }
 
@@ -234,6 +270,11 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
    for (unsigned int i = 0; i < et_cuts_.size(); ++i) {
       tp_mets_[i] = tp_mets[i].Mod();
       rh_mets_[i] = hit_mets[i].Mod();
+   }
+
+   for (unsigned int i = 0; i < eta_cuts_.size(); ++i) {
+      tp_mets_eta_[i] = tp_mets_eta[i].Mod();
+      rh_mets_eta_[i] = hit_mets_eta[i].Mod();
    }
 
    t_->Fill();
