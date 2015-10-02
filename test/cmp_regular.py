@@ -9,7 +9,7 @@ options.parseArguments()
 
 process = cms.Process('test')
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.MessageLogger.suppressError = cms.untracked.vstring("caloStage1Digis")
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
@@ -35,9 +35,9 @@ process.study = cms.EDAnalyzer("HcalMetStudy",
 )
 
 process.comp = cms.EDAnalyzer("HcalCompareLegacyChains",
-        TriggerPrimitives = cms.InputTag('hcalDigis'),
-        RecHits = cms.InputTag('hbhereco'),
-        DataFrames = cms.VInputTag()
+        triggerPrimitives = cms.InputTag('hcalDigis'),
+        recHits = cms.InputTag('hbhereco', 'hfreco'),
+        dataFrames = cms.VInputTag()
 )
 
 process.filterSaturated = cms.EDFilter("SaturatedFilter",
