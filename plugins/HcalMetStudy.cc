@@ -212,7 +212,7 @@ HcalMetStudy::analyze(const edm::Event& event, const edm::EventSetup& setup)
       HcalDetId id(hit.id());
       const auto *local_geo = calo_geo->getSubdetectorGeometry(id)->getGeometry(id);
 
-      auto et = hit.energy() / cosh(local_geo->getPosition().eta());
+      auto et = 0.7 * hit.energy() / cosh(local_geo->getPosition().eta());
       cell.SetMagPhi(et, local_geo->getPosition().phi());
       hit_met += cell;
 
