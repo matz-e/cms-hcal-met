@@ -136,9 +136,9 @@ def plot_pull(fns, selection, stub, which=""):
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
-        t.Draw("(rh{0}-tp{0})/rh{0}>>hist(30,-1.1,1.1)".format(which), selection, "")
+        t.Draw("(tp{0}-rh{0})/rh{0}>>hist(30,-1.1,1.1)".format(which), selection, "")
         h = r.gDirectory.Get("hist")
-        h.SetTitle(";(RH-TP)/RH MET;Count");
+        h.SetTitle(";(TP-RH)/RH MET;Count");
         h.SetDirectory(0)
         h.SetName(fn)
         h.Scale(100. / t.GetEntries())
