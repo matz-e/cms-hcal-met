@@ -11,32 +11,38 @@ labels = {
 }
 
 def plot_met(fn, which=""):
+    fct = r.TF1("fct", "x", 0, 1000)
     f = r.TFile(fn)
     c = r.TCanvas()
     t = f.Get("study/met")
 
     t.Draw("tp{0}:rh{0}>>hist(50,0,600,50,0,600)".format(which), "", "COLZ")
     r.gDirectory.Get("hist").SetTitle("{0};RH MET;TP MET".format(labels[fn]))
+    fct.Draw("same")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_met{0}.pdf".format(which)))
 
     t.Draw("tp{0}:rh{0}>>hist(50,0,200,50,0,200)".format(which), "", "COLZ")
     r.gDirectory.Get("hist").SetTitle("{0};RH MET;TP MET".format(labels[fn]))
+    fct.Draw("same")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_met{0}_low.pdf".format(which)))
 
 def plot_matches(fn):
+    fct = r.TF1("fct", "x", 0, 1000)
     f = r.TFile(fn)
     c = r.TCanvas()
     t = f.Get("comp/matches")
 
     t.Draw("TP_energy:RH_energy>>hist(50,0,200,50,0,200)", "", "COLZ")
     r.gDirectory.Get("hist").SetTitle(";RH E_{T};TP E_{T}")
+    fct.Draw("same")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et.pdf"))
 
     t.Draw("TP_energy:RH_energy>>hist(50,0,10,50,0,10)", "", "COLZ")
     r.gDirectory.Get("hist").SetTitle(";RH E_{T};TP E_{T}")
+    fct.Draw("same")
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_et_low.pdf"))
 
