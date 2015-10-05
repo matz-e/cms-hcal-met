@@ -54,7 +54,7 @@ def plot_composite(fns):
         h.SetTitle(";TP E_{T};Count");
         h.SetDirectory(0)
         h.SetName(fn)
-        h.Scale(100. / h.Integral())
+        # h.Scale(100. / h.Integral())
         hists.append(h)
         f.Close()
 
@@ -70,6 +70,32 @@ def plot_composite(fns):
     c.SetLogy()
     l.Draw()
     c.SaveAs("tp_et.pdf")
+
+    hists = []
+    for fn in fns:
+        f = r.TFile(fn)
+        t = f.Get("study/met")
+        t.Draw("tp>>hist(100,0,500)", "", "")
+        h = r.gDirectory.Get("hist")
+        h.SetTitle(";TP E_{T};Count");
+        h.SetDirectory(0)
+        h.SetName(fn)
+        # h.Scale(100. / h.Integral())
+        hists.append(h)
+        f.Close()
+
+    opt = ""
+    l = r.TLegend(.5, .7, .9, .9)
+    hists = sorted(hists, key=lambda h: h.GetMaximum(), reverse=True)
+    for color, h in zip([r.kRed, r.kBlue, r.kBlack], hists):
+        h.SetName(labels[h.GetName()])
+        h.SetLineColor(color)
+        h.Draw(opt)
+        l.AddEntry(h.GetName(), h.GetName(), "l")
+        opt = "same"
+    c.SetLogy()
+    l.Draw()
+    c.SaveAs("tp_met.pdf")
 
 def plot_pull(fns, selection, stub, which=""):
     c = r.TCanvas()
