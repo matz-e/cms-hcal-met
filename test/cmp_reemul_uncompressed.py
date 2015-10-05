@@ -36,7 +36,7 @@ process.study = cms.EDAnalyzer("HcalMetStudy",
 
 process.comp = cms.EDAnalyzer("HcalCompareLegacyChains",
         triggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
-        recHits = cms.InputTag('hbhereco', 'hfreco'),
+        recHits = cms.VInputTag('hbhereco', 'hfreco'),
         dataFrames = cms.VInputTag()
 )
 
