@@ -5,9 +5,9 @@ r.gROOT.SetBatch()
 r.gStyle.SetOptStat(0)
 
 labels = {
-        'legacy.root': 'RAW',
-        'reemul.root': 'reemulated',
-        'reemul_uncompressed.root': 'uncompressed'
+        'legacy.root': 'TP RAW',
+        'reemul.root': 'TP Reemulated',
+        'reemul_uncompressed.root': 'TP Uncompressed'
 }
 
 def plot_met(fn, which=""):
@@ -77,17 +77,27 @@ def plot_composite(fns):
     l.Draw()
     c.SaveAs("tp_et.pdf")
 
+    rh = None
     hists = []
     for fn in fns:
         f = r.TFile(fn)
         t = f.Get("study/met")
         t.Draw("tp>>hist(100,0,500)", "", "")
         h = r.gDirectory.Get("hist")
-        h.SetTitle(";TP E_{T};Count");
+        h.SetTitle(";TP MET;Count");
         h.SetDirectory(0)
         h.SetName(fn)
-        # h.Scale(100. / h.Integral())
+        h.Scale(100. / t.GetEntries())
         hists.append(h)
+
+        if not rh:
+            t.Draw("rh>>rhist(100,0,500)", "", "")
+            rh = r.gDirectory.Get("rhist")
+            rh.Scale(100. / t.GetEntries())
+            rh.SetTitle(";TP MET;Count");
+            rh.SetDirectory(0)
+            rh.SetName("rhist")
+
         f.Close()
 
     opt = ""
@@ -99,6 +109,9 @@ def plot_composite(fns):
         h.Draw(opt)
         l.AddEntry(h.GetName(), h.GetName(), "l")
         opt = "same"
+    rh.SetLineColor(r.kGreen)
+    rh.Draw("same")
+    l.AddEntry(rh, "RecHits", "l")
     c.SetLogy()
     l.Draw()
     c.SaveAs("tp_met.pdf")
