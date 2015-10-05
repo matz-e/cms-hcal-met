@@ -16,12 +16,12 @@ def plot_met(fn, which=""):
     t = f.Get("study/met")
 
     t.Draw("tp{0}:rh{0}>>hist(50,0,600,50,0,600)".format(which), "", "COLZ")
-    r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
+    r.gDirectory.Get("hist").SetTitle("{0};RH MET;TP MET".format(labels[fn]))
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_met{0}.pdf".format(which)))
 
     t.Draw("tp{0}:rh{0}>>hist(50,0,200,50,0,200)".format(which), "", "COLZ")
-    r.gDirectory.Get("hist").SetTitle(";RH MET;TP MET")
+    r.gDirectory.Get("hist").SetTitle("{0};RH MET;TP MET".format(labels[fn]))
     c.SetLogz()
     c.SaveAs(fn.replace(".root", "_met{0}_low.pdf".format(which)))
 
