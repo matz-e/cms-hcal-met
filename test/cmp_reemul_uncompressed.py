@@ -46,7 +46,7 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
 
 process.filterSaturated = cms.EDFilter("SaturatedFilter",
         triggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
-        maxValue = cms.uint32(0x400)
+        maxValue = cms.uint32(0x3ff)
 )
 
 process.CaloTPGTranscoder.uncompress = cms.bool(True)
